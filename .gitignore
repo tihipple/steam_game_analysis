@@ -1,0 +1,10 @@
+.DS_Store
+.vscode/
+__pycache__/
+*.pyc
+.env
+
+# Large source / generated datasets
+data/steam_large_dataset/
+data/cleaned/
+data/steam_games_dataset

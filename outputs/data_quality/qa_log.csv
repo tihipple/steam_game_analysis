@@ -1,0 +1,61 @@
+phase,field,check_type,finding,status,decision,notes
+Phase 1,appid,uniqueness,94948 unique values across 94948 rows,Pass,Use as primary key,No duplicate appids found
+Phase 1,appid,null_check,0 missing values,Pass,Keep as primary key,Primary key is complete
+Phase 1,name,uniqueness,Duplicate game names exist,Review,Do not use name as primary key,Same title can have multiple appids
+Phase 1,dataset,grain,One row represents one unique Steam application,Pass,Use appid to define source grain,Validated across full dataset
+
+Phase 2,release_date,validity,0 failed date conversions,Pass,Convert to datetime during cleaning,All values can be parsed as dates
+Phase 2,estimated_owners,structure,15 text-based ownership ranges,Review,Parse into numeric fields,Create owner_min owner_max and possibly owner_midpoint
+Phase 2,pct_pos_total,sentinel_value,39575 values equal -1,Clean,Convert -1 to null,-1 appears to represent unavailable derived review data
+Phase 2,pct_pos_recent,sentinel_value,87727 values equal -1,Clean,Convert -1 to null,-1 appears to represent unavailable recent review data
+Phase 2,num_reviews_total,sentinel_value,39575 values equal -1,Clean,Convert -1 to null,Count matches pct_pos_total sentinel pattern
+Phase 2,num_reviews_recent,sentinel_value,87727 values equal -1,Clean,Convert -1 to null,Count matches pct_pos_recent sentinel pattern
+Phase 2,review_metrics,consistency,Only 6222 rows have num_reviews_total equal positive plus negative,Review,Preserve source fields separately,Fields likely use different definitions snapshots or sources
+Phase 2,pct_pos_total,consistency,11893 exact matches to calculated positive review percentage,Review,Preserve source value and create calculated metric separately,Do not overwrite source percentage
+Phase 2,required_age,range,1 negative value found,Fail,Convert negative value to null,Age cannot logically be negative
+Phase 2,metacritic_score,missing_representation,91372 values equal 0,Clean,Treat 0 as unavailable or null,Closely matches missing metacritic_url pattern
+Phase 2,price,range,0 negative prices,Pass,Keep values,No invalid negative prices found
+Phase 2,price,outlier,Maximum price is 999.98,Review,Keep unless proven invalid,Extreme values include business software and specialized applications
+Phase 2,discount,range,All values between 0 and 100,Pass,Keep values,Valid percentage range
+Phase 2,average_playtime_forever,range,0 negative values,Pass,Keep values,Extreme values should remain unless proven invalid
+Phase 2,average_playtime_2weeks,range,0 negative values,Pass,Keep values,No invalid negative values found
+Phase 2,peak_ccu,range,0 negative values,Pass,Keep values,No invalid negative values found
+Phase 2,positive,range,0 negative values,Pass,Keep values,Review counts are logically valid
+Phase 2,negative,range,0 negative values,Pass,Keep values,Review counts are logically valid
+Phase 2,platform_flags,consistency,0 rows have windows mac and linux all false,Pass,Keep values,Every application supports at least one operating system
+Phase 2,name,completeness,2 missing values,Review,Inspect during cleaning,Do not automatically delete the records
+Phase 2,developers,completeness,0 missing null values,Pass,Inspect list structure,Empty list strings still need review
+Phase 2,publishers,completeness,0 missing null values,Pass,Inspect list structure,Empty list strings still need review
+Phase 2,genres,completeness,0 missing null values,Pass,Inspect list structure,Empty list strings still need review
+Phase 2,categories,completeness,0 missing null values,Pass,Inspect list structure,Empty list strings still need review
+
+Phase 3,release_date,cleaning,Converted to datetime,Complete,Keep converted datatype,Validated as datetime64[ns]
+Phase 3,pct_pos_total,cleaning,39575 sentinel -1 values converted to null,Complete,Use null for unavailable values,0 remaining -1 values
+Phase 3,pct_pos_recent,cleaning,87727 sentinel -1 values converted to null,Complete,Use null for unavailable values,0 remaining -1 values
+Phase 3,num_reviews_total,cleaning,39575 sentinel -1 values converted to null,Complete,Use null for unavailable values,0 remaining -1 values
+Phase 3,num_reviews_recent,cleaning,87727 sentinel -1 values converted to null,Complete,Use null for unavailable values,0 remaining -1 values
+Phase 3,required_age,cleaning,1 negative value converted to null,Complete,Use null for invalid negative age,0 negative values remain
+Phase 3,metacritic_score,cleaning,91372 zero values converted to null,Complete,Treat 0 as unavailable,0 Metacritic scores equal 0 remain
+Phase 3,name,cleaning,2 missing values preserved,Complete,Add name_missing_flag,No titles invented and no rows deleted
+Phase 3,name_missing_flag,derived_field,2 records flagged as missing name,Complete,Use for filtering or QA,Flag matches missing-name count
+Phase 3,estimated_owners,transformation,Split text range into owner_min owner_max and owner_midpoint,Complete,Keep source field and derived numeric fields,0 missing owner_min or owner_max values
+Phase 3,calculated_review_total,derived_field,Created from positive plus negative,Complete,Use as transparent calculated metric,0 negative calculated totals
+Phase 3,calculated_positive_pct,derived_field,Created from positive divided by calculated review total,Complete,Keep separate from source pct_pos_total,22300 null values where calculated total equals 0
+Phase 3,genres,cleaning,5441 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,categories,cleaning,5907 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,developers,cleaning,5451 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,publishers,cleaning,5780 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,tags,cleaning,22117 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,supported_languages,cleaning,5412 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,full_audio_languages,cleaning,55090 empty list strings converted to null,Complete,Use null for missing list values,0 remaining empty list strings
+Phase 3,dataset,final_validation,94948 rows and 94948 unique appids,Pass,Preserve source grain,0 duplicate or missing appids after cleaning
+Phase 3,dataset,output,Cleaned dataset saved successfully,Complete,Use cleaned file for downstream analysis,data/cleaned/steam_games_cleaned.csv
+
+Phase 4,game_lookup,relationship,94948 rows and 94948 unique appids,Pass,Use appid as lookup key,Lookup table preserves one row per appid
+Phase 4,game_metrics,relationship,GameMetrics created from cleaned dataset,Pass,Use as spreadsheet analysis table,Metrics table uses the same appid key
+Phase 4,name,xlookup,0 unmatched records,Pass,Keep lookup result,All GameMetrics appids matched to GameLookup
+Phase 4,developers,xlookup,0 unmatched records,Pass,Keep lookup result,All GameMetrics appids matched to GameLookup
+Phase 4,publishers,xlookup,0 unmatched records,Pass,Keep lookup result,All GameMetrics appids matched to GameLookup
+Phase 4,genres,xlookup,0 unmatched records,Pass,Keep lookup result,All GameMetrics appids matched to GameLookup
+Phase 4,publisher_bridge,duplicate_relationships,21 duplicate appid + publisher pairs found,Clean,Remove duplicate pairs,Duplicates were exact repeated relationships
+Phase 4,publisher_bridge,grain,One row per unique appid + publisher,Pass,Use for publisher-level analysis,Bridge table supports many-to-many publisher relationships
