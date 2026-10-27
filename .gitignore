@@ -8,3 +8,5 @@ __pycache__/
 data/steam_large_dataset/
 data/cleaned/
 data/steam_games_dataset
+
+.venv/

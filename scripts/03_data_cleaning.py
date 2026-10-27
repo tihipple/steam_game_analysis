@@ -424,17 +424,3 @@ print(
     "\nCleaned dataset saved to:",
     CLEANED_FILE_PATH
 )
-# -----------------------------------
-# Save Cleaned Dataset
-# Purpose: save the cleaned version separately while preserving the raw source
-# -----------------------------------
-
-CLEANED_FILE_PATH.parent.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-df.to_csv(
-    CLEANED_FILE_PATH,
-    index=False
-)
